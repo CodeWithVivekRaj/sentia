@@ -4,6 +4,9 @@ import { ChemistryGauge } from '../components/ChemistryGauge'
 import { EmotionDisplay } from '../components/EmotionDisplay'
 import { EventFeed } from '../components/EventFeed'
 import { ChatPanel } from '../components/ChatPanel'
+import { ThoughtStream } from '../components/ThoughtStream'
+import { PersonalityTraitsPanel } from '../components/PersonalityTraits'
+import { BondPanel } from '../components/BondPanel'
 import { formatDistanceToNow } from 'date-fns'
 import { clsx } from 'clsx'
 
@@ -79,6 +82,11 @@ export function LifeMonitor() {
           <NeedsBar needs={state.needs} />
         </Panel>
 
+        {/* Bond */}
+        <Panel title="Companion Bond">
+          <BondPanel />
+        </Panel>
+
         {/* Event feed */}
         <Panel title="Event Stream" className="flex-1 overflow-hidden flex flex-col min-h-0">
           <div className="flex-1 overflow-y-auto min-h-0">
@@ -102,20 +110,16 @@ export function LifeMonitor() {
           />
         </Panel>
 
-        {/* Last thought */}
-        <Panel title="Last Thought">
-          {state.last_thought ? (
-            <div>
-              <p className="text-sm text-text leading-relaxed italic">"{state.last_thought}"</p>
-              {state.last_thought_at && (
-                <p className="text-[10px] text-text-dim font-mono mt-2">
-                  {formatDistanceToNow(new Date(state.last_thought_at), { addSuffix: true })}
-                </p>
-              )}
-            </div>
-          ) : (
-            <p className="text-xs text-text-dim italic font-mono">No thoughts yet...</p>
-          )}
+        {/* Personality */}
+        <Panel title="Personality">
+          <PersonalityTraitsPanel />
+        </Panel>
+
+        {/* Thought stream */}
+        <Panel title="Thoughts" className="flex-1 overflow-hidden flex flex-col min-h-0">
+          <div className="flex-1 overflow-y-auto min-h-0">
+            <ThoughtStream />
+          </div>
         </Panel>
       </div>
 

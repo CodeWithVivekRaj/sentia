@@ -87,11 +87,20 @@ export function ChatPanel() {
                 'max-w-[80%] rounded-lg px-3 py-2 text-sm',
                 m.role === 'human'
                   ? 'bg-muted text-text'
+                  : m.initiated
+                  ? 'bg-pulse/10 border border-pulse/30 text-text'
                   : 'bg-life/10 border border-life/20 text-text'
               )}
             >
-              {m.role === 'sentia' && m.emotion && (
-                <div className="text-[10px] text-life/60 font-mono mb-1 capitalize">{m.emotion}</div>
+              {m.role === 'sentia' && (
+                <div className="text-[10px] font-mono mb-1 capitalize flex items-center gap-1.5">
+                  {m.initiated && (
+                    <span className="text-pulse/70">↗ reached out</span>
+                  )}
+                  {m.emotion && (
+                    <span className={m.initiated ? 'text-pulse/50' : 'text-life/60'}>{m.emotion}</span>
+                  )}
+                </div>
               )}
               <p className="leading-relaxed whitespace-pre-wrap">{m.content}</p>
               <div className="text-[10px] text-text-dim mt-1 text-right">

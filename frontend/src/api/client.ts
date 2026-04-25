@@ -24,3 +24,6 @@ export const selectModel = (model: string) =>
 
 export const sendChat = (content: string) =>
   api.post('/chat', { content }).then(r => r.data)
+
+export const getNotifyStatus = () => api.get('/notify/status').then(r => r.data)
+export const sendTestNotification = () => api.post('/notify/test').then(r => r.data)

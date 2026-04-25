@@ -6,6 +6,10 @@ import { LLMToggle } from './components/LLMToggle'
 import { ModelSelector } from './components/ModelSelector'
 import { LifeMonitor } from './pages/LifeMonitor'
 import { MemoryBrowser } from './pages/MemoryBrowser'
+import { Dreams } from './pages/Dreams'
+import { Genome } from './pages/Genome'
+import { Chronicle } from './pages/Chronicle'
+import { Rewards } from './pages/Rewards'
 import { Settings } from './pages/Settings'
 import { clsx } from 'clsx'
 
@@ -69,10 +73,10 @@ function AppShell() {
           <Route path="/" element={<LifeMonitor />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/memory" element={<MemoryBrowser />} />
-          <Route path="/genome" element={<Placeholder title="Genome Inspector" phase={10} />} />
-          <Route path="/dreams" element={<Placeholder title="Dream Log" phase={7} />} />
-          <Route path="/chronicle" element={<Placeholder title="Life Chronicle" phase={11} />} />
-          <Route path="/rewards" element={<Placeholder title="Reward Editor" phase={6} />} />
+          <Route path="/genome" element={<Genome />} />
+          <Route path="/dreams" element={<Dreams />} />
+          <Route path="/chronicle" element={<Chronicle />} />
+          <Route path="/rewards" element={<Rewards />} />
         </Routes>
       </main>
     </div>

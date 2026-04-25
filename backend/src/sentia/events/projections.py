@@ -139,7 +139,7 @@ class SentiaState:
             updates["last_thought"] = p.get("content", "")
             updates["last_thought_at"] = event.timestamp
 
-        elif event.type in (EventType.HUMAN_MESSAGE_RECEIVED, EventType.AI_RESPONDED):
+        elif event.type in (EventType.HUMAN_MESSAGE_RECEIVED, EventType.AI_RESPONDED, EventType.AI_INITIATED_CONTACT):
             updates["last_interaction_at"] = event.timestamp
 
         # ── Body tick snapshot — bulk update from the body engine ────────────

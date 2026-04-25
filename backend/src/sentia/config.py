@@ -27,6 +27,18 @@ class Settings(BaseSettings):
     # Rewards
     rewards_dir: str = str(BASE_DIR.parent / "rewards" / "definitions")
 
+    # Social / companion
+    companion_name: str = "Vivek"
+
+    # WhatsApp notifications
+    whatsapp_provider: str = "callmebot"   # "callmebot" or "twilio"
+    whatsapp_phone: str = ""               # CallMeBot: phone with country code, no +  e.g. 447700900000
+    whatsapp_api_key: str = ""             # CallMeBot API key (from activation message)
+    twilio_account_sid: str = ""
+    twilio_auth_token: str = ""
+    twilio_from: str = "whatsapp:+14155238886"   # Twilio sandbox number
+    twilio_to: str = ""                          # your WhatsApp number: whatsapp:+44...
+
     # Tick intervals (seconds)
     fast_tick_interval: int = 30
     slow_tick_interval: int = 300

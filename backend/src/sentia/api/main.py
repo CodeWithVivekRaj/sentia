@@ -20,6 +20,11 @@ from ..scheduler.coordinator import TickCoordinator
 from ..memory.store import MemoryStore
 from ..memory.embedder import Embedder
 from ..memory.engine import MemoryEngine
+from ..mind.engine import MindEngine
+from ..social.whatsapp import WhatsAppNotifier
+from ..social.bonds import BondTracker
+from ..self.personality import PersonalityEngine
+from ..rewards.engine import RewardEngine
 from .websocket import ConnectionManager
 from . import deps
 from .health import router as health_router
@@ -28,6 +33,12 @@ from .state import router as state_router
 from .chat import router as chat_router
 from .ws_router import router as ws_router
 from .memory import router as memory_router
+from .notify import router as notify_router
+from .dreams import router as dreams_router
+from .self_api import router as self_api_router
+from .rewards_api import router as rewards_router
+from .social import router as social_router
+from .chronicle import router as chronicle_router
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("sentia")
@@ -119,6 +130,45 @@ async def lifespan(app: FastAPI):
     deps.memory_engine = mem_engine
     log.info("Memory engine started (store=%s)", settings.memory_db_path)
 
+    # ── WhatsApp notifier ────────────────────────────────────────────────
+    wa = WhatsAppNotifier(
+        provider=settings.whatsapp_provider,
+        phone=settings.whatsapp_phone,
+        api_key=settings.whatsapp_api_key,
+        account_sid=settings.twilio_account_sid,
+        auth_token=settings.twilio_auth_token,
+        from_number=settings.twilio_from,
+        to_number=settings.twilio_to,
+    )
+    deps.whatsapp = wa
+    log.info("WhatsApp notifier: provider=%s enabled=%s", wa.provider, wa.enabled)
+
+    # ── Personality engine ───────────────────────────────────────────────
+    personality_db = str(Path(settings.db_path).parent / "personality.db")
+    personality = PersonalityEngine()
+    personality.initialize(personality_db, genome_seed="default")
+    personality.start(bus)
+    deps.personality_engine = personality
+    log.info("Personality engine started")
+
+    # ── Reward engine ────────────────────────────────────────────────────
+    reward_eng = RewardEngine(settings.rewards_dir, bus)
+    reward_eng.start()
+    deps.reward_engine = reward_eng
+    log.info("Reward engine started (%d rewards loaded)", len(reward_eng.definitions))
+
+    # ── Bond tracker ─────────────────────────────────────────────────────
+    bond = BondTracker(projection=projection, companion_name=settings.companion_name)
+    bond.start(bus)
+    deps.bond_tracker = bond
+    log.info("Bond tracker started (companion=%s)", settings.companion_name)
+
+    # ── Mind engine ──────────────────────────────────────────────────────
+    mind = MindEngine(bus, projection, adapter, model_mgr, mem_engine, ws_mgr, wa)
+    mind.start()
+    deps.mind_engine = mind
+    log.info("Mind engine started")
+
     # ── Body engine + scheduler ───────────────────────────────────────────
     body = BodyEngine(bus, projection)
     body.initialize_from_state()
@@ -147,6 +197,8 @@ async def lifespan(app: FastAPI):
     await adapter.close()
     mem_store.close()
     await embedder.close()
+    await wa.close()
+    personality.close()
     log.info("Shutdown complete.")
 
 
@@ -170,6 +222,12 @@ app.include_router(models_router, prefix="/api")
 app.include_router(state_router, prefix="/api")
 app.include_router(chat_router, prefix="/api")
 app.include_router(memory_router, prefix="/api")
+app.include_router(notify_router, prefix="/api")
+app.include_router(dreams_router, prefix="/api")
+app.include_router(self_api_router, prefix="/api")
+app.include_router(rewards_router, prefix="/api")
+app.include_router(social_router, prefix="/api")
+app.include_router(chronicle_router, prefix="/api")
 app.include_router(ws_router)
 
 

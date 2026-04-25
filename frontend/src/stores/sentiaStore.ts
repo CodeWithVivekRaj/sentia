@@ -7,6 +7,7 @@ interface ChatMessage {
   content: string
   timestamp: string
   emotion?: string
+  initiated?: boolean  // true when Sentia reached out unprompted
 }
 
 interface SentiaStore {

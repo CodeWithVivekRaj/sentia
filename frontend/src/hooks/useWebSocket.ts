@@ -8,7 +8,7 @@ const RECONNECT_DELAY_MS = 3000
 export function useWebSocket() {
   const wsRef = useRef<WebSocket | null>(null)
   const reconnectTimer = useRef<ReturnType<typeof setTimeout>>()
-  const { setConnected, setWsError, setState, pushEvent } = useSentiaStore()
+  const { setConnected, setWsError, setState, pushEvent, addMessage } = useSentiaStore()
 
   const connect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return
@@ -28,7 +28,20 @@ export function useWebSocket() {
           setState(msg.state)
         } else if (msg.type === 'event') {
           if (msg.state) setState(msg.state)
-          if (msg.data) pushEvent(msg.data)
+          if (msg.data) {
+            pushEvent(msg.data)
+            // Sentia reaching out unprompted → inject into chat
+            if (msg.data.type === 'AIInitiatedContact' && msg.data.payload?.content) {
+              addMessage({
+                id: msg.data.id,
+                role: 'sentia',
+                content: msg.data.payload.content as string,
+                timestamp: msg.data.timestamp,
+                emotion: msg.data.payload.emotion as string | undefined,
+                initiated: true,
+              })
+            }
+          }
         }
       } catch (e) {
         console.error('WS parse error', e)

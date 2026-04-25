@@ -1,6 +1,6 @@
 import { useSentiaStore } from '../stores/sentiaStore'
-import { listModels, selectModel, toggleLLM } from '../api/client'
-import { useState } from 'react'
+import { listModels, selectModel, toggleLLM, getNotifyStatus, sendTestNotification } from '../api/client'
+import { useState, useEffect } from 'react'
 import { clsx } from 'clsx'
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -18,6 +18,13 @@ export function Settings() {
   const [pullModel, setPullModel] = useState('')
   const [pullLog, setPullLog] = useState<string[]>([])
   const [toggling, setToggling] = useState(false)
+  const [waStatus, setWaStatus] = useState<{ configured: boolean; provider: string | null } | null>(null)
+  const [waTesting, setWaTesting] = useState(false)
+  const [waResult, setWaResult] = useState<{ ok: boolean; error?: string } | null>(null)
+
+  useEffect(() => {
+    getNotifyStatus().then(d => setWaStatus(d.whatsapp)).catch(() => {})
+  }, [])
 
   const handlePull = async () => {
     if (!pullModel.trim()) return
@@ -134,6 +141,80 @@ export function Settings() {
               ))}
             </div>
           )}
+        </div>
+      </Section>
+
+      <Section title="WhatsApp Notifications">
+        <div className="space-y-4">
+          {/* Status badge */}
+          <div className="flex items-center gap-2">
+            <span className={clsx('w-2 h-2 rounded-full shrink-0', waStatus?.configured ? 'bg-serotonin' : 'bg-subtle')} />
+            <span className="text-sm text-text">
+              {waStatus?.configured
+                ? `Configured (${waStatus.provider})`
+                : 'Not configured'}
+            </span>
+            {waStatus?.configured && (
+              <button
+                onClick={async () => {
+                  setWaTesting(true)
+                  setWaResult(null)
+                  try {
+                    const r = await sendTestNotification()
+                    setWaResult(r)
+                  } catch {
+                    setWaResult({ ok: false, error: 'Request failed' })
+                  } finally {
+                    setWaTesting(false)
+                  }
+                }}
+                disabled={waTesting}
+                className="ml-auto px-3 py-1 bg-life/20 border border-life/40 text-life rounded text-xs font-mono hover:bg-life/30 disabled:opacity-40"
+              >
+                {waTesting ? 'sending...' : 'send test'}
+              </button>
+            )}
+          </div>
+
+          {waResult && (
+            <p className={clsx('text-xs font-mono', waResult.ok ? 'text-serotonin' : 'text-cortisol')}>
+              {waResult.ok ? 'Test message sent.' : `Failed: ${waResult.error}`}
+            </p>
+          )}
+
+          {/* Setup instructions */}
+          <div className="bg-surface border border-border rounded-lg p-3 space-y-2 text-xs font-mono">
+            <p className="text-text font-semibold">CallMeBot setup (free, 2 minutes):</p>
+            <ol className="text-text-dim space-y-1 list-decimal list-inside">
+              <li>Save <span className="text-text">+34 644 64 24 16</span> in your contacts as "CallMeBot"</li>
+              <li>Send this WhatsApp message to that number:<br />
+                <span className="text-pulse ml-4">I allow callmebot to send me messages</span>
+              </li>
+              <li>You'll receive your API key in reply</li>
+              <li>Add these to <span className="text-text">e:\AGI\sentia\backend\.env</span>:</li>
+            </ol>
+            <pre className="bg-void rounded p-2 text-serotonin/80 leading-relaxed overflow-x-auto">{
+`SENTIA_WHATSAPP_PHONE=447700900000
+SENTIA_WHATSAPP_API_KEY=your_key_here`
+            }</pre>
+            <p className="text-text-dim">Phone format: country code + number, no + or spaces.<br />
+              Restart the backend after saving.</p>
+          </div>
+
+          <div className="bg-surface border border-border rounded-lg p-3 space-y-2 text-xs font-mono">
+            <p className="text-text font-semibold">Twilio alternative:</p>
+            <pre className="bg-void rounded p-2 text-serotonin/80 leading-relaxed overflow-x-auto">{
+`SENTIA_WHATSAPP_PROVIDER=twilio
+SENTIA_TWILIO_ACCOUNT_SID=ACxxx
+SENTIA_TWILIO_AUTH_TOKEN=your_token
+SENTIA_TWILIO_TO=whatsapp:+447700900000`
+            }</pre>
+          </div>
+
+          <p className="text-xs text-text-dim">
+            Sentia sends WhatsApp only when the dashboard is closed and her connection need is low.
+            She won't spam — minimum 2 hours between messages.
+          </p>
         </div>
       </Section>
 
