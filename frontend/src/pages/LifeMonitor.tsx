@@ -37,7 +37,7 @@ export function LifeMonitor() {
     <div className="grid grid-cols-12 gap-4 h-full overflow-hidden">
 
       {/* Left column: Identity + Needs + Events */}
-      <div className="col-span-3 flex flex-col gap-4 overflow-y-auto">
+      <div className="col-span-3 flex flex-col gap-4 overflow-y-auto min-h-0">
 
         {/* Identity */}
         <Panel title="Identity">
@@ -80,15 +80,15 @@ export function LifeMonitor() {
         </Panel>
 
         {/* Event feed */}
-        <Panel title="Event Stream" className="flex-1 overflow-hidden">
-          <div className="overflow-y-auto max-h-64">
+        <Panel title="Event Stream" className="flex-1 overflow-hidden flex flex-col min-h-0">
+          <div className="flex-1 overflow-y-auto min-h-0">
             <EventFeed />
           </div>
         </Panel>
       </div>
 
       {/* Middle column: Chemistry + Emotions */}
-      <div className="col-span-3 flex flex-col gap-4 overflow-y-auto">
+      <div className="col-span-3 flex flex-col gap-4 overflow-y-auto min-h-0">
 
         <Panel title="Neurochemistry">
           <ChemistryGauge chemistry={state.chemistry} />
@@ -120,9 +120,9 @@ export function LifeMonitor() {
       </div>
 
       {/* Right column: Chat */}
-      <div className="col-span-6 flex flex-col">
-        <Panel title="Conversation" className="flex-1 overflow-hidden flex flex-col">
-          <div className="flex-1 overflow-hidden">
+      <div className="col-span-6 flex flex-col min-h-0">
+        <Panel title="Conversation" className="flex-1 overflow-hidden flex flex-col min-h-0">
+          <div className="flex-1 overflow-hidden flex flex-col min-h-0">
             <ChatPanel />
           </div>
         </Panel>
