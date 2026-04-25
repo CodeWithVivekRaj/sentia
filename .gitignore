@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+
+# Poetry
+poetry.lock
+
+# Data - never commit Sentia's memories or event log
+backend/data/events.db
+backend/data/events.db-shm
+backend/data/events.db-wal
+backend/data/state.db
+backend/data/state.db-shm
+backend/data/state.db-wal
+backend/data/memories/
+backend/data/backups/
+
+# Frontend
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.user
+
+# Logs
+*.log
+logs/
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
