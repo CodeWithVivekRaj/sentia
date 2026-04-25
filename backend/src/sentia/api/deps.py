@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from ..llm.model_manager import ModelManager
     from ..llm.ollama_adapter import OllamaAdapter
     from .websocket import ConnectionManager
+    from ..memory.engine import MemoryEngine
 
 # These are set by main.py at startup
 event_store: "EventStore | None" = None
@@ -17,3 +18,4 @@ state_projection: "StateProjection | None" = None
 model_manager: "ModelManager | None" = None
 llm_adapter: "OllamaAdapter | None" = None
 ws_manager: "ConnectionManager | None" = None
+memory_engine: "MemoryEngine | None" = None

@@ -17,6 +17,9 @@ from ..llm.model_manager import ModelManager
 from ..llm.ollama_adapter import OllamaAdapter
 from ..body.engine import BodyEngine
 from ..scheduler.coordinator import TickCoordinator
+from ..memory.store import MemoryStore
+from ..memory.embedder import Embedder
+from ..memory.engine import MemoryEngine
 from .websocket import ConnectionManager
 from . import deps
 from .health import router as health_router
@@ -24,6 +27,7 @@ from .models import router as models_router
 from .state import router as state_router
 from .chat import router as chat_router
 from .ws_router import router as ws_router
+from .memory import router as memory_router
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("sentia")
@@ -36,7 +40,6 @@ async def lifespan(app: FastAPI):
 
     # Ensure data directories exist
     Path(settings.db_path).parent.mkdir(parents=True, exist_ok=True)
-    Path(settings.chroma_path).parent.mkdir(parents=True, exist_ok=True)
 
     # Event store
     store = EventStore(settings.db_path)
@@ -105,6 +108,17 @@ async def lifespan(app: FastAPI):
 
     log.info(f"Sentia alive. LLM: {projection.state.llm_enabled}, model: {projection.state.current_model}")
 
+    # ── Memory engine ────────────────────────────────────────────────────
+    mem_store = MemoryStore(settings.memory_db_path)
+    mem_store.initialize()
+
+    embedder = Embedder(settings.ollama_base_url, current_model)
+
+    mem_engine = MemoryEngine(bus, projection, mem_store, embedder)
+    mem_engine.start()
+    deps.memory_engine = mem_engine
+    log.info("Memory engine started (store=%s)", settings.memory_db_path)
+
     # ── Body engine + scheduler ───────────────────────────────────────────
     body = BodyEngine(bus, projection)
     body.initialize_from_state()
@@ -131,6 +145,8 @@ async def lifespan(app: FastAPI):
     await store.close()
     await model_mgr.close()
     await adapter.close()
+    mem_store.close()
+    await embedder.close()
     log.info("Shutdown complete.")
 
 
@@ -153,6 +169,7 @@ app.include_router(health_router)
 app.include_router(models_router, prefix="/api")
 app.include_router(state_router, prefix="/api")
 app.include_router(chat_router, prefix="/api")
+app.include_router(memory_router, prefix="/api")
 app.include_router(ws_router)
 
 

@@ -133,14 +133,14 @@ class BodyEngine:
         # ── Emit significant discrete events ─────────────────────────────
         await self._emit_significant(new_needs, new_chem, new_emotions, new_mood, stage, age)
 
-    async def slow_tick(self) -> None:
-        """Run every 5 min. Placeholder — expanded in Phase 4."""
+    async def slow_tick(self, dt_seconds: float = 300.0) -> None:
+        """Run every 5 min."""
         state = self._projection.state
         if not state.is_alive:
             return
         await self._bus.emit(Event(
             type=EventType.TICK_SLOW,
-            payload={"timestamp": datetime.utcnow().isoformat()},
+            payload={"timestamp": datetime.utcnow().isoformat(), "dt_seconds": dt_seconds},
         ))
 
     async def daily_tick(self) -> None:

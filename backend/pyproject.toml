@@ -13,7 +13,7 @@ websockets = "^12.0"
 python-socketio = "^5.11.0"
 sqlalchemy = "^2.0.30"
 aiosqlite = "^0.20.0"
-# chromadb = "^0.5.0"  # Phase 3 — enable after installing "Desktop development with C++" workload in VS Build Tools
+# chromadb removed — using Ollama embeddings + SQLite instead (no C++ build deps)
 rx = "^3.2.0"
 apscheduler = "^3.10.4"
 httpx = "^0.27.0"

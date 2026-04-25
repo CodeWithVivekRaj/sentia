@@ -14,6 +14,7 @@ class TickCoordinator:
     def __init__(self, body_engine: "BodyEngine") -> None:
         self._body = body_engine
         self._scheduler = AsyncIOScheduler(timezone="UTC")
+        self._slow_interval: int = 300
 
     def setup(
         self,
@@ -21,6 +22,7 @@ class TickCoordinator:
         slow_interval: int = 300,
         daily_interval: int = 86400,
     ) -> None:
+        self._slow_interval = slow_interval
         self._scheduler.add_job(
             self._fast,
             IntervalTrigger(seconds=fast_interval),
@@ -58,7 +60,7 @@ class TickCoordinator:
 
     async def _slow(self) -> None:
         try:
-            await self._body.slow_tick()
+            await self._body.slow_tick(dt_seconds=float(self._slow_interval))
         except Exception:
             log.exception("Slow tick error")
 

@@ -14,8 +14,8 @@ class Settings(BaseSettings):
     db_path: str = str(BASE_DIR / "data" / "events.db")
     state_db_path: str = str(BASE_DIR / "data" / "state.db")
 
-    # ChromaDB
-    chroma_path: str = str(BASE_DIR / "data" / "memories")
+    # Memory
+    memory_db_path: str = str(BASE_DIR / "data" / "memories.db")
 
     # Ollama
     ollama_base_url: str = "http://localhost:11434"
