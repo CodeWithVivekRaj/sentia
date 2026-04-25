@@ -15,6 +15,8 @@ from ..events.projections import StateProjection
 from ..events.types import Event, EventType
 from ..llm.model_manager import ModelManager
 from ..llm.ollama_adapter import OllamaAdapter
+from ..body.engine import BodyEngine
+from ..scheduler.coordinator import TickCoordinator
 from .websocket import ConnectionManager
 from . import deps
 from .health import router as health_router
@@ -103,10 +105,24 @@ async def lifespan(app: FastAPI):
 
     log.info(f"Sentia alive. LLM: {projection.state.llm_enabled}, model: {projection.state.current_model}")
 
+    # ── Body engine + scheduler ───────────────────────────────────────────
+    body = BodyEngine(bus, projection)
+    body.initialize_from_state()
+
+    scheduler = TickCoordinator(body)
+    scheduler.setup(
+        fast_interval=settings.fast_tick_interval,
+        slow_interval=settings.slow_tick_interval,
+        daily_interval=settings.daily_tick_interval,
+    )
+    scheduler.start()
+    log.info("Body engine running. First tick in %ds.", settings.fast_tick_interval)
+
     yield  # ── Running ──
 
     # ── Shutdown ─────────────────────────────────────────────────────────
     log.info("Sentia shutting down...")
+    scheduler.stop()
     await bus.emit(Event(
         type=EventType.SYSTEM_STOPPED,
         payload={"timestamp": datetime.utcnow().isoformat()},

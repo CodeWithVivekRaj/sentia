@@ -142,6 +142,22 @@ class SentiaState:
         elif event.type in (EventType.HUMAN_MESSAGE_RECEIVED, EventType.AI_RESPONDED):
             updates["last_interaction_at"] = event.timestamp
 
+        # ── Body tick snapshot — bulk update from the body engine ────────────
+        elif event.type == EventType.TICK_FAST:
+            if "needs" in p:
+                updates["needs"] = p["needs"]
+            if "chemistry" in p:
+                updates["chemistry"] = p["chemistry"]
+            if "emotions" in p:
+                updates["emotions"] = p["emotions"]
+                updates["dominant_emotion"] = p.get("dominant_emotion", self.dominant_emotion)
+            if "mood" in p:
+                updates["mood"] = p["mood"]
+            if "age_days" in p:
+                updates["age_days"] = p["age_days"]
+            if "life_stage" in p:
+                updates["life_stage"] = p["life_stage"]
+
         return dataclasses.replace(self, **updates)
 
 
@@ -159,11 +175,16 @@ class StateProjection:
         return self._state
 
     def snapshot(self) -> dict:
-        import dataclasses
+        from datetime import datetime
         s = self._state
+        # Age is always live — not frozen to last tick
+        age_days = (
+            (datetime.utcnow() - s.born_at.replace(tzinfo=None)).total_seconds() / 86_400
+            if s.born_at else 0.0
+        )
         return {
             "born_at": s.born_at.isoformat() if s.born_at else None,
-            "age_days": round(s.age_days, 2),
+            "age_days": round(age_days, 4),
             "life_stage": s.life_stage,
             "is_alive": s.is_alive,
             "llm_enabled": s.llm_enabled,
